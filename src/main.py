@@ -1,6 +1,6 @@
 import dearpygui.dearpygui as dpg
+from typing import Any
 from grid import Grid
-import time
 
 # CONSTANTS AND VARIABLES ---------------------------------------------
 # VIEWPORT
@@ -31,6 +31,15 @@ def set_update_speed(sender) -> None:
     grid.set_update_speed(dpg.get_value(sender))
 
 
+def reset_grid(sender) -> None:
+    grid.clear_grid()
+    grid.update_grid()
+
+
+def paint_random_cells(sender, cells_quantity) -> None:
+    grid.paint_random_cells(cells_quantity)
+
+
 with dpg.window(tag="main_window"):
     with dpg.group(tag="controls_container", horizontal_spacing=10):
 
@@ -41,7 +50,7 @@ with dpg.window(tag="main_window"):
         dpg.add_text("Total cells:", tag="txt_total_cells")
 
         with dpg.group():
-            speed_slider: int | str = dpg.add_slider_float(
+            speed_slider: Any = dpg.add_slider_float(
                 default_value=.1,
                 min_value=.1,
                 max_value=1.,
@@ -49,12 +58,44 @@ with dpg.window(tag="main_window"):
                 width=200,
                 callback=set_update_speed
             )
-            dpg.add_button(
-                label="Play",
-                tag="play_pause_button",
-                width=100,
-                callback=grid.play_pause_game
-            )
+
+            # Default horizontal spacing -> 8px ???
+            with dpg.group(horizontal=True):
+                dpg.add_button(
+                    label="Play",
+                    tag="play_pause_button",
+                    width=100,
+                    callback=grid.play_pause_game
+                )
+                dpg.add_button(
+                    label="Clear",
+                    tag="clear_button",
+                    width=100,
+                    callback=reset_grid
+                )
+
+            dpg.add_separator()
+
+            with dpg.group():
+                # TODO: UPDATE ATTS WHEN RESIZING GRID
+                random_cells_input: Any = dpg.add_input_int(
+                    default_value=grid.total_cells//5,
+                    min_value=1,
+                    max_value=grid.total_cells,
+                    min_clamped=True,
+                    step=10,
+                    step_fast=50,
+                    width=200
+                )
+
+                dpg.add_button(
+                    label="Go",
+                    width=100,
+                    callback=lambda: paint_random_cells(None, dpg.get_value(random_cells_input))
+                )
+
+            # TODO: CHANGE GRID SIZE
+            # DELETE AND RE INIT GRID INSTANCE?
 
     # HEIGHT MUST BE CELL_SIZE divisor + 20 (TOTAL PADDING I GUESS) ???
     with dpg.group(width=1020, height=620, pos=GRID_POS, tag="grid_container"):
