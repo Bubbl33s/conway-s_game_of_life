@@ -23,11 +23,11 @@ class Grid:
     dead_color: Color
     cell_border_color: Color
 
-    def __init__(self, width: int, height: int, cell_size: int, pos_offset: list[int]) -> None:
+    def __init__(self, width: int, height: int, cell_size: int) -> None:
         self.width = width
         self.height = height
         self.cell_size = cell_size
-        self.pos_offset = pos_offset
+        self.cursor_offset = [8, 8]
         self.is_running = False
         self.update_speed = .1
         self.last_update_time = time.time()
@@ -46,9 +46,7 @@ class Grid:
             for j in range(self.height):
                 current_cell_tag: str = f"cellx{i}y{j}"
 
-                # WEIRD VERTICAL OFFSET
-                w_offset = 20
-                pmin: tuple[int, int] = (i*self.cell_size, j*self.cell_size + w_offset)
+                pmin: tuple[int, int] = (i*self.cell_size, j*self.cell_size)
                 pmax: tuple[int, int] = (pmin[0] + self.cell_size, pmin[1] + self.cell_size)
 
                 dpg.draw_rectangle(
@@ -69,32 +67,35 @@ class Grid:
         self.update_cells_count()
 
     def toggle_cell_color(self, sender, app_data) -> None:
+        # CHECK IF THE MOUSE IS OVER THE GRID, FIX MULTIPLE CHILD WINDOWS BUG
+        if dpg.get_active_window() != dpg.get_alias_id("grid_container"):
+            return None
+
         mouse_button: int = dpg.get_item_configuration(sender)["button"]
 
         x: int
         y: int
         x, y = dpg.get_mouse_pos()
 
-        cell_x: int = int((x - self.pos_offset[0])//self.cell_size)
-        cell_y: int = int((y - self.pos_offset[1])//self.cell_size)
+        cell_x: int = int((x - self.cursor_offset[0])//self.cell_size)
+        cell_y: int = int((y - self.cursor_offset[1])//self.cell_size)
         cell_tag: str = f"cellx{cell_x}y{cell_y}"
 
         if dpg.does_item_exist(cell_tag):
             current_fill: list[float] = dpg.get_item_configuration(cell_tag)["fill"]
-
-            # PAINT CELL
             """
             NOTE
             
             Colors are provided on a 0-1 scale list, but must be set using a 0-255 scale
             """
+            # PAINT CELL
             if mouse_button == 0 and current_fill == self.dead_color.get_normalized():
                 dpg.configure_item(cell_tag, fill=self.alive_color.get_float())
                 self.grid[cell_x][cell_y] = True
-                self.alive_cells += 1
+
             # UNPAINT CELL
             elif mouse_button == 1 and current_fill == self.alive_color.get_normalized():
-                dpg.configure_item(cell_tag, fill=self.alive_color.get_float())
+                dpg.configure_item(cell_tag, fill=self.dead_color.get_float())
                 self.grid[cell_x][cell_y] = False
 
             self.update_cells_count()
