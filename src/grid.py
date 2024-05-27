@@ -42,21 +42,37 @@ class Grid:
     def initialize_grid(self, parent: int) -> None:
         self.clear_grid()
 
+        # Draw background rectangle for borders
+        pmin = (0, 0)
+        pmax = (self.width * self.cell_size, self.height * self.cell_size)
+
+        dpg.draw_rectangle(
+            pmin,
+            pmax,
+            color=self.cell_border_color.get_int(),
+            fill=self.cell_border_color.get_int(),
+            tag="grid_background",
+            parent=parent
+        )
+
         for i in range(self.width):
             for j in range(self.height):
                 current_cell_tag: str = f"cellx{i}y{j}"
 
-                pmin: tuple[int, int] = (i*self.cell_size, j*self.cell_size)
-                pmax: tuple[int, int] = (pmin[0] + self.cell_size, pmin[1] + self.cell_size)
+                # +-1 to avoid overlapping the border
+                pmin: tuple[int, int] = (i*self.cell_size + 1, j*self.cell_size + 1)
+                pmax: tuple[int, int] = (pmin[0] + self.cell_size - 1, pmin[1] + self.cell_size - 1)
 
                 dpg.draw_rectangle(
                     pmin,
                     pmax,
-                    color=self.cell_border_color.get_int(),
-                    fill=self.dead_color.get_int(),
+                    color=TRANSPARENT.get_int(),
+                    fill=self.cell_border_color.get_int(),
                     tag=current_cell_tag,
                     parent=parent
                 )
+
+        self.render_grid()
 
     def clear_grid(self) -> None:
         # Reset attributes and UI texts
@@ -171,10 +187,11 @@ class Grid:
         self.update_cells_count()
 
     def update_border_color(self) -> None:
-        for i in range(self.width):
-            for j in range(self.height):
-                cell_tag: str = f"cellx{i}y{j}"
-                dpg.configure_item(cell_tag, color=self.cell_border_color.get_int())
+        dpg.configure_item(
+            "grid_background",
+            color=self.cell_border_color.get_int(),
+            fill=self.cell_border_color.get_int()
+        )
 
     def set_update_speed(self, new_update_speed: float) -> None:
         self.update_speed = new_update_speed

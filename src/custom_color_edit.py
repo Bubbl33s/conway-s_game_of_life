@@ -35,8 +35,11 @@ class CustomColorEdit:
         if self.selected_radio == "Cell border":
             self.grid.update_border_color()
 
+        self.grid.render_grid()
+
     def render(self) -> None:
         dpg.add_text("Color scheme:")
+
         with dpg.group(horizontal=True):
             dpg.add_radio_button(
                 items=("Alive cell", "Dead cell", "Cell border"),

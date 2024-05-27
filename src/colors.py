@@ -30,10 +30,10 @@ class Color:
 
     def set_color(self, red: int, blue: int, green: int) -> None:
         self.channels = (red, blue, green, self.alpha)
-        print("COLOR SETTED")
 
 
 # INITIAL COLOR CONSTANTS
 WHITE = Color(255, 255, 255, 255)
 BLACK = Color(0, 0, 0, 255)
 GRAY_CELL_BORDER = Color(30, 30, 30, 255)
+TRANSPARENT = Color(0, 0, 0, 0)
