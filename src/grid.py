@@ -1,43 +1,31 @@
 import dearpygui.dearpygui as dpg
 import numpy as np
 import time
+from .colors import *
 
-from colors import *
+# GRID
+WIDTH: int = 66
+HEIGHT: int = 40
+CELL_SIZE: int = 15
 
 
 class Grid:
-    width: int
-    height: int
-    cell_size: int
-    pos_offset: list[int]
-    is_running: bool
-    update_speed: float
-    last_update_time: float
-    total_cells: int
-    alive_cells: int
-    dead_cells: int
-    generation: int
-    grid: np.ndarray
-
-    alive_color: Color
-    dead_color: Color
-    cell_border_color: Color
-
-    def __init__(self, width: int, height: int, cell_size: int) -> None:
-        self.width = width
-        self.height = height
-        self.cell_size = cell_size
-        self.cursor_offset = [8, 8]
-        self.is_running = False
-        self.update_speed = .1
-        self.last_update_time = time.time()
-        self.total_cells = self.width*self.height
-        self.alive_cells = 0
-        self.dead_cells = self.total_cells
-
-        self.alive_color = WHITE
-        self.dead_color = BLACK
-        self.cell_border_color = GRAY_CELL_BORDER
+    def __init__(self) -> None:
+        self.width: int = WIDTH
+        self.height:int = HEIGHT
+        self.cell_size: int = CELL_SIZE
+        self.grid = np.zeros((self.width, self.height), dtype=bool)
+        self.cursor_offset: tuple[int, int] = (8, 8)
+        self.is_running: bool = False
+        self.update_speed: float = .1
+        self.last_update_time: float = time.time()
+        self.total_cells: int = self.width*self.height
+        self.alive_cells: int = 0
+        self.dead_cells: int = self.total_cells
+        self.generation: int = 1
+        self.alive_color: Color = WHITE
+        self.dead_color: Color = BLACK
+        self.cell_border_color: Color = GRAY_CELL_BORDER
 
     def initialize_grid(self, parent: int) -> None:
         self.clear_grid()
@@ -82,7 +70,7 @@ class Grid:
         self.generation = 1
         self.update_cells_count()
 
-    def toggle_cell_color(self, sender, app_data) -> None:
+    def toggle_cell_color(self, sender) -> None:
         # CHECK IF THE MOUSE IS OVER THE GRID, FIX MULTIPLE CHILD WINDOWS BUG
         if dpg.get_active_window() != dpg.get_alias_id("grid_container"):
             return None
@@ -116,7 +104,7 @@ class Grid:
 
             self.update_cells_count()
 
-    def count_alive_neighbors(self, x, y):
+    def count_alive_neighbors(self, x, y) -> int:
         alive_neighbors: int = 0
 
         for i in range(-1, 2):
@@ -148,9 +136,9 @@ class Grid:
         self.alive_cells = np.count_nonzero(self.grid)
         self.dead_cells = self.total_cells - self.alive_cells
 
-        dpg.set_value("txt_generation", f"Generation: {self.generation}")
-        dpg.set_value("txt_alive_cells", f"Alive cells: {self.alive_cells}")
-        dpg.set_value("txt_dead_cells", f"Dead cells: {self.dead_cells}")
+        dpg.set_value("txt_generation", f"  {"Generation":<15} {self.generation:>6}")
+        dpg.set_value("txt_alive_cells", f"  {"Alive cells":<15} {self.alive_cells:>6}")
+        dpg.set_value("txt_dead_cells", f"  {"Dead cells":<15} {self.dead_cells:>6}")
 
     def render_grid(self) -> None:
         self.update_cells_count()
@@ -167,7 +155,29 @@ class Grid:
         self.last_update_time = time.time() if self.is_running else 0
         dpg.set_item_label("play_pause_button", "Pause" if self.is_running else "Play")
 
-    def paint_random_cells(self, cells_quantity: int) -> None:
+    def update_border_color(self) -> None:
+        dpg.configure_item(
+            "grid_background",
+            color=self.cell_border_color.get_int(),
+            fill=self.cell_border_color.get_int()
+        )
+
+    def mouse_handler(self, parent: int) -> None:
+        for button in range(2):
+            dpg.add_mouse_down_handler(
+                button=button,
+                callback=self.toggle_cell_color,
+                parent=parent
+            )
+
+    def set_update_speed(self, sender: int) -> None:
+        self.update_speed = dpg.get_value(sender)
+
+    def reset_grid(self, sender: int) -> None:
+        self.clear_grid()
+        self.update_grid()
+
+    def paint_random_cells(self, sender: None, cells_quantity: int) -> None:
         self.clear_grid()
         self.update_grid()
 
@@ -185,29 +195,6 @@ class Grid:
                 painted_cells.add((x, y))
 
         self.update_cells_count()
-
-    def update_border_color(self) -> None:
-        dpg.configure_item(
-            "grid_background",
-            color=self.cell_border_color.get_int(),
-            fill=self.cell_border_color.get_int()
-        )
-
-    def set_update_speed(self, new_update_speed: float) -> None:
-        self.update_speed = new_update_speed
-
-    def mouse_handler(self, parent: int) -> None:
-        dpg.add_mouse_down_handler(
-            button=0,
-            callback=self.toggle_cell_color,
-            parent=parent
-        )
-
-        dpg.add_mouse_down_handler(
-            button=1,
-            callback=self.toggle_cell_color,
-            parent=parent
-        )
 
     def mainloop(self) -> None:
         current_time: float = time.time()

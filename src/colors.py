@@ -1,6 +1,3 @@
-from typing import Tuple
-
-
 class Color:
     red: int
     green: int
@@ -22,18 +19,21 @@ class Color:
     # Setting configure color must be float
     def get_float(self) -> tuple[float, ...]:
         # Doesn't matter if it's a list or a tuple
-        return tuple([c/1 for c in self.channels])
+        return tuple(c/1 for c in self.channels)
 
     # Colors are provided in 0-1 scale
     def get_normalized(self) -> list[float]:
-        return list([c/255 for c in self.channels])
+        return list(c/255 for c in self.channels)
 
-    def set_color(self, red: int, blue: int, green: int) -> None:
-        self.channels = (red, blue, green, self.alpha)
+    def set_color(self, red: int, green: int, blue: int) -> None:
+        self.red = red
+        self.green = green
+        self.blue = blue
+        self.channels = (self.red, self.green, self.blue, self.alpha)
 
 
 # INITIAL COLOR CONSTANTS
 WHITE = Color(255, 255, 255, 255)
 BLACK = Color(0, 0, 0, 255)
-GRAY_CELL_BORDER = Color(30, 30, 30, 255)
+GRAY_CELL_BORDER = Color(40, 40, 40, 255)
 TRANSPARENT = Color(0, 0, 0, 0)
