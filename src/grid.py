@@ -170,6 +170,12 @@ class Grid:
 
         self.update_cells_count()
 
+    def update_border_color(self) -> None:
+        for i in range(self.width):
+            for j in range(self.height):
+                cell_tag: str = f"cellx{i}y{j}"
+                dpg.configure_item(cell_tag, color=self.cell_border_color.get_int())
+
     def set_update_speed(self, new_update_speed: float) -> None:
         self.update_speed = new_update_speed
 

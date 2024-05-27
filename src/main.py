@@ -1,7 +1,8 @@
 import dearpygui.dearpygui as dpg
 from typing import Any
 from grid import Grid
-from _theme import apply_theme
+from theme import apply_theme
+from custom_color_edit import CustomColorEdit
 
 # CONSTANTS AND VARIABLES ---------------------------------------------
 # VIEWPORT
@@ -26,6 +27,7 @@ dpg.create_viewport(
 dpg.setup_dearpygui()
 
 grid: Grid = Grid(grid_width, grid_height, cell_size)
+cell_colors: CustomColorEdit = CustomColorEdit(grid.alive_color.get_int(), grid)
 
 
 def set_update_speed(sender) -> None:
@@ -58,7 +60,7 @@ with dpg.window(tag="main_window", autosize=True):
                     default_value=.1,
                     min_value=.1,
                     max_value=1.,
-                    format="%.2f",
+                    format="%.1f",
                     width=200,
                     callback=set_update_speed
                 )
@@ -98,12 +100,14 @@ with dpg.window(tag="main_window", autosize=True):
                         callback=lambda: paint_random_cells(None, dpg.get_value(random_cells_input))
                     )
 
+                dpg.add_separator()
+
+                with dpg.group():
+                    cell_colors.render()
+
                 # TODO: CHANGE GRID SIZE
                 # DELETE AND RE INIT GRID INSTANCE?
                 # TODO: UPDATE ATTS WHEN RESIZING GRID
-
-                with dpg.group():
-                    dpg.add_button()
 
         # child_window padding -> 8 ???
         with dpg.child_window(width=(grid_width*cell_size + 16), height=616, tag="grid_container") as grid_container:

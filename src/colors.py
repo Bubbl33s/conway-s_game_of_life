@@ -28,6 +28,10 @@ class Color:
     def get_normalized(self) -> list[float]:
         return list([c/255 for c in self.channels])
 
+    def set_color(self, red: int, blue: int, green: int) -> None:
+        self.channels = (red, blue, green, self.alpha)
+        print("COLOR SETTED")
+
 
 # INITIAL COLOR CONSTANTS
 WHITE = Color(255, 255, 255, 255)
