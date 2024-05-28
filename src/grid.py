@@ -12,7 +12,7 @@ CELL_SIZE: int = 15
 class Grid:
     def __init__(self) -> None:
         self.width: int = WIDTH
-        self.height:int = HEIGHT
+        self.height: int = HEIGHT
         self.cell_size: int = CELL_SIZE
         self.grid = np.zeros((self.width, self.height), dtype=bool)
         self.cursor_offset: tuple[int, int] = (8, 8)
